@@ -37,6 +37,10 @@ class DashboardScreen extends StatelessWidget {
               
               // Aqui vai entrar o nosso Card de Progresso Circular (Copilot vai amar isso)
               _buildProgressCard(context),
+              const SizedBox(height: 24),
+              _buildMacrosGrid(context),
+              const SizedBox(height: 24),
+              _buildWeightGoalCard(context),
             ],
           ),
         ),
@@ -87,6 +91,71 @@ class DashboardScreen extends StatelessWidget {
               ),
             ],
           )
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMacrosGrid(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        _buildMacroCard(context, 'Proteína', '160g', 'Faltam 40g', Colors.blueAccent),
+        _buildMacroCard(context, 'Carbo', '350g', 'Faltam 120g', Theme.of(context).colorScheme.primary), // Nosso roxo
+        _buildMacroCard(context, 'Gordura', '80g', 'Faltam 15g', Colors.orangeAccent),
+      ],
+    );
+  }
+
+  Widget _buildMacroCard(BuildContext context, String title, String value, String subtitle, Color color) {
+    return Expanded(
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 4),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(title, style: TextStyle(color: Colors.grey[400], fontSize: 14)),
+            const SizedBox(height: 8),
+            Text(value, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+            const SizedBox(height: 8),
+            // LinearProgressIndicator doesn't have borderRadius param on older SDKs; keep simple
+            LinearProgressIndicator(
+              value: 0.7, // 70% da meta do macro
+              backgroundColor: Colors.grey[800],
+              color: color,
+            ),
+            const SizedBox(height: 8),
+            Text(subtitle, style: TextStyle(color: Colors.grey[500], fontSize: 12)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildWeightGoalCard(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('Rumo aos 70kg', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 4),
+              Text('Peso atual: 52kg', style: TextStyle(fontSize: 14, color: Colors.grey[400])),
+            ],
+          ),
+          Icon(Icons.monitor_weight_outlined, color: Theme.of(context).colorScheme.secondary, size: 32),
         ],
       ),
     );
