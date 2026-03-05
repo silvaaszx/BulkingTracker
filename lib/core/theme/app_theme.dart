@@ -28,8 +28,10 @@ class AppTheme {
       ),
 
       // Estilo padrão dos Cards para criar profundidade sem bordas
-      cardTheme: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
+      cardTheme: CardTheme(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
       ),
       
       // Deixando o AppBar minimalista, sem sombra e combinando com o fundo
