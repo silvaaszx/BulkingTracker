@@ -237,68 +237,91 @@ class DashboardScreen extends StatelessWidget {
 
   // A função que abre o formulário
   void _showAddMealBottomSheet(BuildContext context) {
+    // Controlador para pegar o texto que o usuário digitar
+    final TextEditingController mealController = TextEditingController();
+
     showModalBottomSheet(
       context: context,
-      isScrollControlled: true, 
+      isScrollControlled: true,
       backgroundColor: Theme.of(context).colorScheme.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (context) {
+      builder: (bottomSheetContext) {
         return Padding(
           padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
-            left: 16,
-            right: 16,
+            bottom: MediaQuery.of(bottomSheetContext).viewInsets.bottom,
+            left: 20,
+            right: 20,
             top: 24,
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'O que você comeu agora?',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              const Row(
+                children: [
+                  Icon(Icons.auto_awesome, color: Colors.amber), // Ícone de IA
+                  SizedBox(width: 8),
+                  Text(
+                    'Descreva sua refeição',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Nossa IA vai calcular as calorias e macros automaticamente para você.',
+                style: TextStyle(fontSize: 14, color: Colors.grey[400]),
               ),
               const SizedBox(height: 24),
+
+              // O campo de Texto Livre
               TextField(
+                controller: mealController,
+                maxLines: 3, // Deixa o campo mais altinho
                 decoration: InputDecoration(
-                  labelText: 'Nome da refeição (ex: Frango com batata)',
-                  prefixIcon: const Icon(Icons.restaurant),
+                  hintText: 'Ex: Comi 150g de arroz branco, 100g de frango grelhado e tomei um copo de suco de laranja...',
+                  hintStyle: TextStyle(color: Colors.grey[600]),
+                  filled: true,
+                  fillColor: Colors.black12,
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: BorderSide.none,
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
-              TextField(
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(
-                  labelText: 'Calorias (kcal)',
-                  prefixIcon: const Icon(Icons.local_fire_department),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-              ),
+
               const SizedBox(height: 24),
               SizedBox(
                 width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
+                height: 56,
+                child: ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Theme.of(context).colorScheme.primary, 
+                    backgroundColor: Theme.of(context).colorScheme.primary,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(16),
                     ),
                   ),
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text(
-                    'Salvar Refeição',
+                  onPressed: () {
+                    // Aqui vai entrar a chamada da API do Gemini depois!
+                    // Por enquanto, vamos fingir que a IA calculou e vamos jogar dados fixos pra testar o Provider
+                    context.read<TrackerProvider>().addMealMacros(
+                      kcal: 450,
+                      protein: 35,
+                      carbo: 40,
+                      fat: 10,
+                    );
+                    Navigator.pop(bottomSheetContext);
+                  },
+                  icon: const Icon(Icons.analytics_outlined, color: Colors.white),
+                  label: const Text(
+                    'Analisar com IA',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 24),
             ],
           ),
         );
