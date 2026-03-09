@@ -35,7 +35,6 @@ class DashboardScreen extends StatelessWidget {
               ),
               const SizedBox(height: 32),
               
-              // Aqui vai entrar o nosso Card de Progresso Circular (Copilot vai amar isso)
               _buildProgressCard(context),
               const SizedBox(height: 24),
               _buildMacrosGrid(context),
@@ -43,6 +42,16 @@ class DashboardScreen extends StatelessWidget {
               _buildWeightGoalCard(context),
             ],
           ),
+        ),
+      ),
+      // Nosso Botão Flutuante que tinha ficado de fora:
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => _showAddMealBottomSheet(context),
+        backgroundColor: Theme.of(context).colorScheme.primary, 
+        icon: const Icon(Icons.add, color: Colors.white),
+        label: const Text(
+          'Nova Refeição', 
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
       ),
     );
@@ -101,7 +110,7 @@ class DashboardScreen extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         _buildMacroCard(context, 'Proteína', '160g', 'Faltam 40g', Colors.blueAccent),
-        _buildMacroCard(context, 'Carbo', '350g', 'Faltam 120g', Theme.of(context).colorScheme.primary), // Nosso roxo
+        _buildMacroCard(context, 'Carbo', '350g', 'Faltam 120g', Theme.of(context).colorScheme.primary),
         _buildMacroCard(context, 'Gordura', '80g', 'Faltam 15g', Colors.orangeAccent),
       ],
     );
@@ -123,9 +132,8 @@ class DashboardScreen extends StatelessWidget {
             const SizedBox(height: 8),
             Text(value, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
             const SizedBox(height: 8),
-            // LinearProgressIndicator doesn't have borderRadius param on older SDKs; keep simple
             LinearProgressIndicator(
-              value: 0.7, // 70% da meta do macro
+              value: 0.7,
               backgroundColor: Colors.grey[800],
               color: color,
             ),
@@ -158,6 +166,77 @@ class DashboardScreen extends StatelessWidget {
           Icon(Icons.monitor_weight_outlined, color: Theme.of(context).colorScheme.secondary, size: 32),
         ],
       ),
+    );
+  }
+
+  // A função que abre o formulário
+  void _showAddMealBottomSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true, 
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+            left: 16,
+            right: 16,
+            top: 24,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'O que você comeu agora?',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 24),
+              TextField(
+                decoration: InputDecoration(
+                  labelText: 'Nome da refeição (ex: Frango com batata)',
+                  prefixIcon: const Icon(Icons.restaurant),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  labelText: 'Calorias (kcal)',
+                  prefixIcon: const Icon(Icons.local_fire_department),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme.of(context).colorScheme.primary, 
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text(
+                    'Salvar Refeição',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
+          ),
+        );
+      },
     );
   }
 }
