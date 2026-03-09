@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:bulkingtracker/features/dashboard/presentation/dashboard_screen.dart'; // Import da Dashboard
 import 'package:bulkingtracker/features/dashboard/presentation/achievements_screen.dart'; // Import das Conquistas
+import 'package:bulkingtracker/features/progress/presentation/progress_screen.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -15,8 +16,8 @@ class _MainScreenState extends State<MainScreen> {
   // Agora temos 4 telas na nossa lista
   final List<Widget> _screens = [
     const DashboardScreen(), 
-    const Center(child: Text('Tela de Evolução (Gráfico)', style: TextStyle(fontSize: 20))),
-    const AchievementsScreen(), // <-- Tem que estar chamando a nossa tela nova aqui
+    const ProgressScreen(), // <-- A mágica do gráfico entra aqui!
+    const AchievementsScreen(), 
     const Center(child: Text('Perfil e Configurações', style: TextStyle(fontSize: 20))),
   ];
 
