@@ -16,7 +16,7 @@ class _MainScreenState extends State<MainScreen> {
   final List<Widget> _screens = [
     const DashboardScreen(), 
     const Center(child: Text('Tela de Evolução (Gráfico)', style: TextStyle(fontSize: 20))),
-    const AchievementsScreen(), // <-- A mágica entra aqui!
+    const AchievementsScreen(), // <-- Tem que estar chamando a nossa tela nova aqui
     const Center(child: Text('Perfil e Configurações', style: TextStyle(fontSize: 20))),
   ];
 
