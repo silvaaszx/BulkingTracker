@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:bulkingtracker/features/dashboard/presentation/dashboard_screen.dart'; // Import da Dashboard
 import 'package:bulkingtracker/features/dashboard/presentation/achievements_screen.dart'; // Import das Conquistas
 import 'package:bulkingtracker/features/progress/presentation/progress_screen.dart';
+import 'package:bulkingtracker/features/profile/presentation/profile_screen.dart'; // Import do Perfil
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -18,7 +19,7 @@ class _MainScreenState extends State<MainScreen> {
     const DashboardScreen(), 
     const ProgressScreen(), // <-- A mágica do gráfico entra aqui!
     const AchievementsScreen(), 
-    const Center(child: Text('Perfil e Configurações', style: TextStyle(fontSize: 20))),
+    const ProfileScreen(),
   ];
 
   @override
