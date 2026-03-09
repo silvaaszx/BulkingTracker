@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../tracking/providers/tracker_provider.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -38,6 +40,8 @@ class DashboardScreen extends StatelessWidget {
               _buildProgressCard(context),
               const SizedBox(height: 24),
               _buildMacrosGrid(context),
+              const SizedBox(height: 24),
+              _buildWaterCard(context),
               const SizedBox(height: 24),
               _buildWeightGoalCard(context),
             ],
@@ -164,6 +168,68 @@ class DashboardScreen extends StatelessWidget {
             ],
           ),
           Icon(Icons.monitor_weight_outlined, color: Theme.of(context).colorScheme.secondary, size: 32),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildWaterCard(BuildContext context) {
+    final tracker = context.watch<TrackerProvider>();
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Row(
+                children: [
+                  Icon(Icons.water_drop, color: Colors.blueAccent, size: 20),
+                  SizedBox(width: 8),
+                  Text('Água', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Text(
+                '${tracker.waterIntake} / ${tracker.waterGoal} ml',
+                style: const TextStyle(fontSize: 16),
+              ),
+              const SizedBox(height: 12),
+              // Barra de progresso da água
+              SizedBox(
+                width: 150,
+                child: LinearProgressIndicator(
+                  value: tracker.waterProgress,
+                  backgroundColor: Colors.grey[800],
+                  color: Colors.blueAccent,
+                  minHeight: 8,
+                ),
+              ),
+            ],
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.2),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              elevation: 0,
+            ),
+            onPressed: () {
+              context.read<TrackerProvider>().addWater(250);
+            },
+            child: const Column(
+              children: [
+                Icon(Icons.add, color: Colors.blueAccent),
+                Text('250ml', style: TextStyle(color: Colors.blueAccent, fontWeight: FontWeight.bold)),
+              ],
+            ),
+          ),
         ],
       ),
     );

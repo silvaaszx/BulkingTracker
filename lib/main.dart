@@ -1,9 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart'; // Importante!
 import 'package:bulkingtracker/core/theme/app_theme.dart'; // Importando o arquivo do tema
 import 'package:bulkingtracker/features/main/presentation/main_screen.dart'; // Importando a MainScreen
+import 'package:bulkingtracker/features/tracking/providers/tracker_provider.dart'; // O nosso novo provider
 
 void main() {
-  runApp(const MyApp());
+  runApp(
+    // Injetamos os Providers bem no topo do app
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => TrackerProvider()),
+      ],
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
