@@ -6,10 +6,12 @@ class TrackerProvider extends ChangeNotifier {
   String _userName = 'Atleta';
   double _currentWeight = 0.0;
   double _goalWeight = 0.0;
+  double _startingWeight = 0.0;
 
   String get userName => _userName;
   double get currentWeight => _currentWeight;
   double get goalWeight => _goalWeight;
+  double get startingWeight => _startingWeight;
 
   // --- ÁGUA ---
   int _waterIntake = 0;
@@ -21,10 +23,21 @@ class TrackerProvider extends ChangeNotifier {
   int _currentCarbo = 0;
   int _currentFat = 0;
 
-  final int _goalKcal = 3200;
-  final int _goalProtein = 160;
-  final int _goalCarbo = 350;
-  final int _goalFat = 80;
+  int _goalKcal = 0;
+  int _goalProtein = 0;
+  int _goalCarbo = 0;
+  int _goalFat = 0;
+
+  // Lógica de Toast
+  bool _waterToastShown = false;
+
+  bool checkWaterAchievement() {
+    if (_waterIntake >= _waterGoal && !_waterToastShown) {
+      _waterToastShown = true;
+      return true;
+    }
+    return false;
+  }
 
   // Construtor: Assim que o app abre, ele puxa os dados salvos!
   TrackerProvider() {
@@ -53,6 +66,31 @@ class TrackerProvider extends ChangeNotifier {
   int get goalFat => _goalFat;
   double get fatProgress => (_currentFat / _goalFat).clamp(0.0, 1.0);
 
+  // Lógica Dinâmica de Bulking
+  void calculateAndSaveMacros(double currentWeight) {
+    if (currentWeight <= 0) return;
+    _currentWeight = currentWeight;
+    _goalProtein = (currentWeight * 2.2).toInt();
+    _goalFat = (currentWeight * 1.0).toInt();
+    _goalKcal = (currentWeight * 40).toInt(); 
+    _goalCarbo = ((_goalKcal - (_goalProtein * 4) - (_goalFat * 9)) / 4).toInt();
+    _saveData();
+    notifyListeners();
+  }
+
+  void setProfile(String name, double goalWeight) {
+    _userName = name;
+    _goalWeight = goalWeight;
+    _saveData();
+    notifyListeners();
+  }
+
+  void setStartingWeight(double weight) {
+    _startingWeight = weight;
+    _saveData();
+    notifyListeners();
+  }
+
   // Funções de Ação
   void addWater(int amount) {
     _waterIntake += amount;
@@ -80,13 +118,24 @@ class TrackerProvider extends ChangeNotifier {
     _userName = prefs.getString('userName') ?? 'Atleta';
     _currentWeight = prefs.getDouble('currentWeight') ?? 0.0;
     _goalWeight = prefs.getDouble('goalWeight') ?? 0.0;
+    _startingWeight = prefs.getDouble('startingWeight') ?? _currentWeight;
     
     _waterIntake = prefs.getInt('waterIntake') ?? 0;
     _currentKcal = prefs.getInt('currentKcal') ?? 0;
     _currentProtein = prefs.getInt('currentProtein') ?? 0;
     _currentCarbo = prefs.getInt('currentCarbo') ?? 0;
     _currentFat = prefs.getInt('currentFat') ?? 0;
-    notifyListeners(); // Atualiza a tela depois de carregar da memória
+    
+    _goalKcal = prefs.getInt('goalKcal') ?? 0;
+    _goalProtein = prefs.getInt('goalProtein') ?? 0;
+    _goalCarbo = prefs.getInt('goalCarbo') ?? 0;
+    _goalFat = prefs.getInt('goalFat') ?? 0;
+    
+    if (_currentWeight > 0) {
+      calculateAndSaveMacros(_currentWeight);
+    } else {
+      notifyListeners();
+    }
   }
 
   Future<void> _saveData() async {
@@ -95,10 +144,16 @@ class TrackerProvider extends ChangeNotifier {
     await prefs.setString('userName', _userName);
     await prefs.setDouble('currentWeight', _currentWeight);
     await prefs.setDouble('goalWeight', _goalWeight);
+    await prefs.setDouble('startingWeight', _startingWeight);
     await prefs.setInt('waterIntake', _waterIntake);
     await prefs.setInt('currentKcal', _currentKcal);
     await prefs.setInt('currentProtein', _currentProtein);
     await prefs.setInt('currentCarbo', _currentCarbo);
     await prefs.setInt('currentFat', _currentFat);
+    
+    await prefs.setInt('goalKcal', _goalKcal);
+    await prefs.setInt('goalProtein', _goalProtein);
+    await prefs.setInt('goalCarbo', _goalCarbo);
+    await prefs.setInt('goalFat', _goalFat);
   }
 }

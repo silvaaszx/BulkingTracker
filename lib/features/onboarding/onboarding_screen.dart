@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:provider/provider.dart';
+import '../tracking/providers/tracker_provider.dart';
 import '../main/presentation/main_screen.dart';
 
 class OnboardingScreen extends StatefulWidget {
@@ -21,12 +23,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   Future<void> _finishOnboarding() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('hasSeenOnboarding', true); // Marca que já fez o onboarding
-    await prefs.setString('userName', _name.isEmpty ? 'Atleta' : _name);
-    await prefs.setDouble('currentWeight', _currentWeight);
-    await prefs.setDouble('goalWeight', _goalWeight);
 
-    // Navega para o ecrã principal e não deixa voltar para trás com a seta
     if (mounted) {
+      final tracker = context.read<TrackerProvider>();
+      final finalName = _name.isEmpty ? 'Atleta' : _name;
+      
+      tracker.setProfile(finalName, _goalWeight);
+      tracker.setStartingWeight(_currentWeight);
+      tracker.calculateAndSaveMacros(_currentWeight);
+
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const MainScreen()),

@@ -43,6 +43,8 @@ dependencies:
   google_generative_ai: ^0.4.7
   http: ^1.6.0
   flutter_dotenv: ^6.0.0
+  flutter_animate: ^4.5.0
+  toastification: ^2.3.0
 
 dependency_overrides:
   vector_math: ^2.2.0
