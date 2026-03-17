@@ -1,39 +1,24 @@
 import 'dart:convert';
-import 'package:google_generative_ai/google_generative_ai.dart';
+import 'dart:io';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+// Import removido: package:flutter_dotenv/flutter_dotenv.dart
+// Import removido: package:google_generative_ai/google_generative_ai.dart
 
 class GeminiService {
-  // Agora ele puxa do arquivo secreto, seguro e blindado!
-  static String get _apiKey => dotenv.env['GEMINI_API_KEY'] ?? '';
+  // URL oficial da Cloud Function (Backend Proxy para proteger a API Key do Gemini)
+  static const String _functionUrl = 'https://analyzemeal-6wp5xpjb3a-uc.a.run.app';
 
   Future<Map<String, int>?> analyzeMeal(String prompt) async {
-    // Usamos o modelo flash porque é super rápido e perfeito para tarefas curtas
-    final model = GenerativeModel(
-      model: 'gemini-2.5-flash', // <-- O modelo mais rápido e atual!
-      apiKey: _apiKey,
-    );
-
-    // O truque da Engenharia de Prompt: forçar a IA a cuspir SÓ o JSON!
-    final structuredPrompt = '''
-    Atue como um nutricionista. O usuário comeu o seguinte: "$prompt".
-    Calcule as calorias e os macronutrientes aproximados.
-    Retorne APENAS um JSON válido com esta estrutura exata (use números inteiros):
-    {"kcal": 0, "protein": 0, "carbo": 0, "fat": 0}
-    Não adicione crases, blocos de código, nem texto explicativo. Apenas o JSON puro.
-    ''';
-
     try {
-      final response = await model.generateContent([
-        Content.text(structuredPrompt),
-      ]);
-      final text = response.text;
+      final response = await http.post(
+        Uri.parse(_functionUrl),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'prompt': prompt}),
+      ).timeout(const Duration(seconds: 15)); // Timeout pra não travar a UI pra sempre
 
-      if (text != null) {
-        // Limpamos alguma sujeira (como as crases ```json) caso a IA seja teimosa
-        final cleanText =
-            text.replaceAll('```json', '').replaceAll('```', '').trim();
-        final Map<String, dynamic> data = jsonDecode(cleanText);
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = jsonDecode(response.body);
 
         return {
           'kcal': data['kcal'] as int,
@@ -41,36 +26,17 @@ class GeminiService {
           'carbo': data['carbo'] as int,
           'fat': data['fat'] as int,
         };
-      }
-    } catch (e) {
-      print('Erro ao consultar o Gemini: $e');
-    }
-    return null; // Se der ruim, retorna nulo
-  }
-
-  Future<void> listarModelosDisponiveis() async {
-    final url = Uri.parse(
-      'https://generativelanguage.googleapis.com/v1beta/models?key=$_apiKey',
-    );
-
-    try {
-      final response = await http.get(url);
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        print('====== MODELOS LIBERADOS PARA SUA CHAVE ======');
-        for (var model in data['models']) {
-          // Filtra só os que suportam gerar conteúdo de texto
-          if (model['supportedGenerationMethods'] != null &&
-              model['supportedGenerationMethods'].contains('generateContent')) {
-            print(model['name']); // Vai imprimir algo como "models/gemini-..."
-          }
-        }
-        print('=============================================');
       } else {
-        print('Erro ao buscar modelos: ${response.body}');
+        debugPrint('Erro no servidor do Firebase: ${response.statusCode}');
+        throw Exception('server_error');
       }
     } catch (e) {
-      print('Erro no HTTP: $e');
+      debugPrint('Erro ao consultar o Proxy do Gemini: $e');
+      if (e is SocketException || e is HttpException || e.toString().contains('TimeoutException')) {
+        throw Exception('network_error');
+      }
+      throw Exception('parse_error');
     }
   }
+
 }

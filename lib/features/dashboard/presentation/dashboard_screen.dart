@@ -313,8 +313,43 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
                         setModalState(() { isAnalyzing = true; });
                         final service = GeminiService();
-                        final result = await service.analyzeMeal(text);
+                        Map<String, int>? result;
+                        String? errorMsg;
+                        try {
+                          result = await service.analyzeMeal(text);
+                        } catch (e) {
+                          if (e.toString().contains('network_error')) {
+                            errorMsg = 'Falha na conexão. Verifique sua internet.';
+                          } else {
+                            errorMsg = 'Ops! A IA não conseguiu entender. Tente detalhar mais.';
+                          }
+                        }
+                        
+                        // Guarda mounted antes do gap assíncrono para evitar crash
+                        if (!context.mounted) return;
                         setModalState(() { isAnalyzing = false; });
+
+                        if (errorMsg != null) {
+                           toastification.show(
+                             context: context,
+                             type: ToastificationType.error,
+                             style: ToastificationStyle.flatColored,
+                             title: Text(errorMsg, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                             description: const Text('Por favor, tente novamente.', style: TextStyle(color: Colors.white70)),
+                             backgroundColor: Colors.red.shade900,
+                             primaryColor: Colors.redAccent,
+                             autoCloseDuration: const Duration(seconds: 4),
+                             borderRadius: BorderRadius.circular(16),
+                             boxShadow: [
+                               BoxShadow(
+                                 color: Colors.redAccent.withOpacity(0.4),
+                                 blurRadius: 15,
+                                 spreadRadius: 2,
+                               )
+                             ]
+                           );
+                           return;
+                        }
 
                         if (result != null) {
                           bottomSheetContext.read<TrackerProvider>().addMealMacros(
@@ -332,17 +367,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             description: Text('${result['protein']}g P, ${result['carbo']}g C, ${result['fat']}g G', style: const TextStyle(color: Colors.white70)),
                             backgroundColor: Colors.deepPurple.shade900,
                             primaryColor: Colors.deepPurpleAccent,
-                            autoCloseDuration: const Duration(seconds: 3),
-                            borderRadius: BorderRadius.circular(16),
-                          );
-                        } else {
-                          toastification.show(
-                            context: context,
-                            type: ToastificationType.error,
-                            style: ToastificationStyle.flatColored,
-                            title: const Text('Ops! A IA não conseguiu entender. Tente detalhar mais.', style: TextStyle(color: Colors.white)),
-                            backgroundColor: Colors.red.shade900,
-                            primaryColor: Colors.redAccent,
                             autoCloseDuration: const Duration(seconds: 3),
                             borderRadius: BorderRadius.circular(16),
                           );
@@ -382,7 +406,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+          padding: const EdgeInsets.only(bottom: 120, left: 24, right: 24, top: 24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -397,7 +421,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
               const SizedBox(height: 28),
               
-              // Macros Card
+              // Calorias Card
               _buildPremiumCard(
                 context,
                 child: Column(
@@ -405,9 +429,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   children: [
                     const Row(
                       children: [
-                        Icon(Icons.pie_chart_rounded, color: Colors.deepPurpleAccent, size: 24),
+                        Icon(Icons.local_fire_department, color: Colors.orangeAccent, size: 24),
                         SizedBox(width: 8),
-                        Text('Macros Diários', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
+                        Text('Calorias Diárias', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
                       ],
                     ),
                     const SizedBox(height: 24),
@@ -415,6 +439,112 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         _buildCircularKcal(tracker.currentKcal, tracker.goalKcal, tracker.kcalProgress),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+              
+              // NOVO WIDGET: Meta de Peso
+              _buildPremiumCard(
+                context,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.monitor_weight_outlined, color: Colors.deepPurpleAccent, size: 24),
+                        SizedBox(width: 8),
+                        Text('Progresso do Bulking', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                    Builder(
+                      builder: (context) {
+                        final double weightDiff = (tracker.goalWeight - tracker.currentWeight).abs();
+                        final bool reached = tracker.currentWeight >= tracker.goalWeight && tracker.goalWeight > 0;
+                        final String titleText = reached ? '🎉 Meta Alcançada!' : 'Faltam ${weightDiff.toStringAsFixed(1)} kg';
+                        
+                        final double totalNeeded = (tracker.goalWeight - tracker.startingWeight).abs();
+                        final double currentGained = (tracker.currentWeight - tracker.startingWeight).abs();
+                        double progress = (totalNeeded == 0) ? 1.0 : (currentGained / totalNeeded).clamp(0.0, 1.0);
+                        if (reached) progress = 1.0;
+                        if (progress < 0) progress = 0.0;
+
+                        return Column(
+                          children: [
+                            Text(
+                              titleText,
+                              style: const TextStyle(
+                                fontSize: 28,
+                                fontWeight: FontWeight.w900,
+                                color: Colors.purpleAccent,
+                                shadows: [Shadow(color: Colors.deepPurpleAccent, blurRadius: 15)],
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+                            TweenAnimationBuilder<double>(
+                              tween: Tween<double>(begin: 0.0, end: progress),
+                              duration: const Duration(milliseconds: 1000),
+                              curve: Curves.easeOutCubic,
+                              builder: (context, value, child) {
+                                return LayoutBuilder(
+                                  builder: (context, constraints) {
+                                    return Container(
+                                      height: 6,
+                                      width: double.infinity,
+                                      decoration: BoxDecoration(
+                                        color: Colors.white.withOpacity(0.1),
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                      child: Align(
+                                        alignment: Alignment.centerLeft,
+                                        child: Container(
+                                          width: constraints.maxWidth * value,
+                                          decoration: BoxDecoration(
+                                            borderRadius: BorderRadius.circular(4),
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: Colors.deepPurpleAccent.withOpacity(0.6),
+                                                blurRadius: 12,
+                                                spreadRadius: 2,
+                                              )
+                                            ],
+                                            gradient: const LinearGradient(
+                                              colors: [Colors.purpleAccent, Colors.deepPurpleAccent],
+                                              begin: Alignment.centerLeft,
+                                              end: Alignment.centerRight,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                );
+                              },
+                            ),
+                          ],
+                        );
+                      }
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              // Macros Grid
+              _buildPremiumCard(
+                context,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Row(
+                      children: [
+                        Icon(Icons.pie_chart_rounded, color: Colors.blueAccent, size: 24),
+                        SizedBox(width: 8),
+                        Text('Distribuição de Macros', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
                       ],
                     ),
                     const SizedBox(height: 24),
@@ -486,40 +616,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ],
                 ),
               ),
-              const SizedBox(height: 20),
-              
-              // Weight Goal Card
-              _buildPremiumCard(
-                context,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Rumo aos ${tracker.goalWeight}kg',
-                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Peso atual: ${tracker.currentWeight}kg',
-                          style: TextStyle(fontSize: 14, color: Colors.grey.shade400),
-                        ),
-                      ],
-                    ),
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.deepPurpleAccent.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: const Icon(Icons.monitor_weight_outlined, color: Colors.deepPurpleAccent, size: 32),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 100),
             ].animate(interval: 80.ms).fade(duration: 600.ms, curve: Curves.easeOutCubic).slideY(begin: 0.1, end: 0, curve: Curves.easeOutCubic),
           ),
         ),

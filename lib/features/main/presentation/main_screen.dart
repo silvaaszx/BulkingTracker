@@ -27,39 +27,42 @@ class _MainScreenState extends State<MainScreen> {
     return Scaffold(
       body: _screens[_currentIndex], 
       
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
-        backgroundColor: Theme.of(context).colorScheme.surface,
-        selectedItemColor: Theme.of(context).colorScheme.primary, // Nosso roxo
-        unselectedItemColor: Colors.grey[600],
-        type: BottomNavigationBarType.fixed, // Super importante para caber 4 itens sem bugar o layout
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home_outlined),
-            activeIcon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.show_chart_outlined),
-            activeIcon: Icon(Icons.show_chart),
-            label: 'Evolução',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.emoji_events_outlined), // Ícone de troféu vazado
-            activeIcon: Icon(Icons.emoji_events), // Ícone de troféu preenchido
-            label: 'Conquistas',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
-            activeIcon: Icon(Icons.person),
-            label: 'Perfil',
-          ),
-        ],
+      bottomNavigationBar: SafeArea(
+        bottom: true,
+        child: BottomNavigationBar(
+          currentIndex: _currentIndex,
+          onTap: (index) {
+            setState(() {
+              _currentIndex = index;
+            });
+          },
+          backgroundColor: Theme.of(context).colorScheme.surface,
+          selectedItemColor: Theme.of(context).colorScheme.primary, // Nosso roxo
+          unselectedItemColor: Colors.grey[600],
+          type: BottomNavigationBarType.fixed, // Super importante para caber 4 itens sem bugar o layout
+          items: const [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.home_outlined),
+              activeIcon: Icon(Icons.home),
+              label: 'Home',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.show_chart_outlined),
+              activeIcon: Icon(Icons.show_chart),
+              label: 'Evolução',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.emoji_events_outlined), // Ícone de troféu vazado
+              activeIcon: Icon(Icons.emoji_events), // Ícone de troféu preenchido
+              label: 'Conquistas',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.person_outline),
+              activeIcon: Icon(Icons.person),
+              label: 'Perfil',
+            ),
+          ],
+        ),
       ),
     );
   }

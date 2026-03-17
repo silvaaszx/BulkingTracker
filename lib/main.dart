@@ -6,10 +6,16 @@ import 'package:bulkingtracker/features/main/presentation/main_screen.dart'; // 
 import 'package:bulkingtracker/features/tracking/providers/tracker_provider.dart'; // O nosso novo provider
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:bulkingtracker/features/onboarding/onboarding_screen.dart';
+import 'package:flutter/services.dart';
 
-void main() async {
+Future<void> main() async {
   // Garante que o Flutter tá pronto antes de ler coisas de fora
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Trava a orientação em Portrait (Evita rejeição da Apple por quebra de layout)
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+  ]);
 
   // Amortecedor: tenta carregar .env, se falhar continua sem travar
   try {
@@ -18,15 +24,19 @@ void main() async {
     debugPrint('Aviso: arquivo .env não encontrado ou erro ao carregar.');
   }
 
-  // Verifica se já fez o onboarding
+  // Cria o provider e aguarda o carregamento completo do SharedPreferences
+  // antes de decidir qual tela mostrar — elimina a race condition!
+  final tracker = TrackerProvider();
+  await tracker.initFuture;
+
+  // Verifica se já fez o onboarding (após os dados estarem carregados)
   final prefs = await SharedPreferences.getInstance();
   final hasSeenOnboarding = prefs.getBool('hasSeenOnboarding') ?? false;
 
   runApp(
-    // Injetamos os Providers bem no topo do app
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => TrackerProvider()),
+        ChangeNotifierProvider(create: (_) => tracker),
       ],
       child: MyApp(hasSeenOnboarding: hasSeenOnboarding),
     ),

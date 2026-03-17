@@ -130,61 +130,47 @@ class AchievementsScreen extends StatelessWidget {
             ? Border.all(color: glowColor.withOpacity(0.8), width: 1.5) 
             : Border.all(color: Colors.white.withOpacity(0.02), width: 1),
       ),
-      child: Stack(
-        children: [
-          // Content
-          Opacity(
-            opacity: isUnlocked ? 1.0 : 0.4,
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    iconData,
-                    size: 48,
-                    color: isUnlocked ? glowColor : Colors.grey.shade600,
-                  ).animate(
-                    onPlay: isUnlocked ? (controller) => controller.repeat(reverse: true) : null,
-                  ).scaleXY(begin: 1.0, end: 1.08, duration: 1500.ms, curve: Curves.easeInOut),
-                  const SizedBox(height: 16),
-                  Text(
-                    title,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                      color: isUnlocked ? Colors.white : Colors.grey.shade500,
-                      shadows: isUnlocked ? [Shadow(color: glowColor.withOpacity(0.5), blurRadius: 10)] : [],
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    desc,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey.shade500,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          
-          // Lock Icon Overlay
-          if (!isUnlocked)
-            Center(
-              child: Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.6),
-                  shape: BoxShape.circle,
+      child: Opacity(
+        opacity: isUnlocked ? 1.0 : 0.4,
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                iconData,
+                size: 42,
+                color: isUnlocked ? glowColor : Colors.grey.shade600,
+              ).animate(
+                onPlay: isUnlocked ? (controller) => controller.repeat(reverse: true) : null,
+              ).scaleXY(begin: 1.0, end: 1.08, duration: 1500.ms, curve: Curves.easeInOut),
+              const SizedBox(height: 12),
+              Text(
+                title,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                  color: isUnlocked ? Colors.white : Colors.grey.shade500,
+                  shadows: isUnlocked ? [Shadow(color: glowColor.withOpacity(0.5), blurRadius: 10)] : [],
                 ),
-                child: const Icon(Icons.lock, size: 28, color: Colors.white70),
               ),
-            ),
-        ],
+              const SizedBox(height: 4),
+              Text(
+                desc,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 11,
+                  color: Colors.grey.shade500,
+                ),
+              ),
+              if (!isUnlocked) ...[
+                const SizedBox(height: 8),
+                Icon(Icons.lock, size: 20, color: Colors.grey[600]),
+              ]
+            ],
+          ),
+        ),
       ),
     );
   }
